@@ -1,0 +1,5 @@
+aiohttp>=3.9
+rich>=13
+
+[test]
+pytest>=8

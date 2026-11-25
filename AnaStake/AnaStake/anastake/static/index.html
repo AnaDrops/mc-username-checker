@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Phantom</title>
+<style>
+:root{--bg:#14131c;--card:#1b1a26;--line:#25243350;--mute:#7d7b8e;--text:#ecebf3;--accent:#5865f2;--gold:#ffd95a;--red:#ff5d6c}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--text);font:14px "Space Grotesk",system-ui,sans-serif;display:flex;min-height:100vh}
+aside{width:182px;flex:none;padding:18px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--line)}
+.logo{font-weight:700;letter-spacing:2px;margin-bottom:16px}
+.group{font-size:9px;letter-spacing:1.5px;color:var(--mute);margin:18px 8px 8px}
+nav button{all:unset;cursor:pointer;padding:9px 12px;border-radius:7px;color:var(--mute);display:flex;gap:12px}
+nav button:focus-visible{outline:2px solid var(--accent)}
+nav button.on{background:var(--accent);color:#fff;box-shadow:0 4px 18px #5865f255}
+nav{display:flex;flex-direction:column;gap:3px}
+.ver{margin-top:auto;font-size:12px}
+main{flex:1;padding:6px 40px 24px 18px;min-width:0;display:flex;flex-direction:column;gap:18px}
+header{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:21px}.sub{color:var(--mute);font-size:11px;margin-top:6px}
+.status{font-size:12px;font-weight:600}.status::before{content:"• ";color:var(--mute)}.status.live::before{color:#4ade80}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.big{font:700 19px ui-monospace,monospace}.label{font-size:9px;letter-spacing:1px;color:var(--mute);text-transform:uppercase;margin-top:6px}
+h2{font-size:10px;letter-spacing:1.5px;color:var(--mute);text-transform:uppercase}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1}
+.ring{width:130px;margin:30px auto;display:block}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mini div{background:#16151f;border-radius:7px;padding:11px;text-align:center}
+.mini b{display:block;font:700 12px ui-monospace,monospace;margin-top:7px}
+.mini span{font-size:9px;color:var(--mute);text-transform:uppercase}
+.empty{color:var(--mute);text-align:center;margin-top:180px}
+ul{list-style:none;padding:0;margin-top:12px}li{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-family:ui-monospace,monospace}
+.target{display:flex;justify-content:space-between;font-weight:700}.target h2{color:var(--accent)}
+form{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+label{font-size:11px;color:var(--mute);display:flex;flex-direction:column;gap:5px}
+label.check{flex-direction:row;align-items:center}
+input,select{background:#16151f;border:1px solid #302f42;border-radius:6px;color:var(--text);padding:8px;font:inherit}
+.actions{display:flex;gap:10px;margin-top:16px}
+.btn{background:var(--accent);border:0;border-radius:7px;color:#fff;padding:10px 18px;font:600 13px inherit;cursor:pointer}
+.btn.alt{background:#2b2a3a}
+table{width:100%;border-collapse:collapse;font-family:ui-monospace,monospace}td,th{text-align:left;padding:7px;border-bottom:1px solid var(--line)}
+#msg{color:var(--gold);min-height:18px;white-space:pre-wrap;overflow-wrap:anywhere}
+[hidden]{display:none!important}
+@media(max-width:760px){body{flex-direction:column}aside{width:100%}main{padding:16px}.tiles{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}.empty{margin:60px 0}}
+</style></head><body>
+<aside>
+  <div class="logo">PHANTOM</div>
+  <nav>
+    <div class="group">GLOBAL</div>
+    <button data-page="names">◇ Names</button>
+    <button data-page="results">☆ Results</button>
+    <div class="group">MINECRAFT</div>
+    <button data-page="dash" class="on">▤ MC Dashboard</button>
+    <button data-page="sniper">◎ MC Sniper</button>
+  </nav>
+  <div class="ver">PHANTOM v3.1</div>
+</aside>
+<main>
+  <header><div><h1 id="title">Dashboard</h1><div class="sub">Minecraft Username Checker (AnaStake) — Real-time overview</div></div>
+    <div class="status" id="status">Stopped</div></header>
+  <div id="msg" role="status"></div>
+
+  <section id="dash" style="display:flex;flex-direction:column;gap:16px;flex:1">
+    <div class="tiles">
+      <div class="card"><div class="big" id="available">0</div><div class="label">Available (likely + verified)</div></div>
+      <div class="card"><div class="big" id="taken">0</div><div class="label">Taken</div></div>
+      <div class="card"><div class="big" id="rate">0</div><div class="label">Checks/s</div></div>
+      <div class="card"><div class="big" id="limited" style="color:var(--gold)">0</div><div class="label">Rate limited</div></div>
+    </div>
+    <div class="split">
+      <div class="card"><h2>Progress</h2>
+        <svg class="ring" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="53" fill="none" stroke="#29283a" stroke-width="7"/>
+          <circle id="arc" cx="60" cy="60" r="53" fill="none" stroke="#5865f2" stroke-width="7" stroke-linecap="round" stroke-dasharray="0.1 333" transform="rotate(-90 60 60)"/>
+          <text id="pct" x="60" y="62" text-anchor="middle" fill="#ecebf3" font-size="21" font-weight="700" font-family="monospace">0.0%</text>
+          <text id="frac" x="60" y="79" text-anchor="middle" fill="#7d7b8e" font-size="9">0 / 0</text>
+        </svg>
+        <div class="mini">
+          <div><span>Elapsed</span><b id="elapsed">00:00:00</b></div>
+          <div><span>ETA</span><b id="eta" style="color:var(--accent)">--:--:--</b></div>
+          <div><span>Remaining</span><b id="remaining">0</b></div>
+          <div><span>Retries</span><b id="retries">0</b></div>
+          <div><span>Errors</span><b id="errors" style="color:var(--red)">0</b></div>
+          <div><span>Total reqs</span><b id="requests" style="color:var(--gold)">0</b></div>
+        </div>
+        <div class="label" id="extra" style="text-align:center;margin-top:14px"></div>
+      </div>
+      <div class="card"><h2>Recent captures</h2><ul id="hits"></ul><div class="empty" id="empty">No captures yet. Start sniping!</div></div>
+    </div>
+    <div class="card target"><h2>Current target</h2><span id="current">None</span></div>
+  </section>
+
+  <section id="sniper" class="card" hidden>
+    <form id="form" onsubmit="return false">
+      <label>Mode<select name="mode" id="mode"></select></label>
+      <label>Charset<input name="charset" value="letters,digits,underscore"></label>
+      <label>Length<input name="length" type="number" value="4" min="3" max="16"></label>
+      <label>Random count<input name="count" type="number" value="100" min="1"></label>
+      <label>Pattern (? # *)<input name="pattern" placeholder="ab??"></label>
+      <label>Prefix<input name="prefix"></label>
+      <label>Suffix<input name="suffix"></label>
+      <label>Free characters<input name="free" type="number" value="2" min="0"></label>
+      <label>Shape<select name="shape"><option>all</option><option>repeat</option><option>alternate</option><option>palindrome</option></select></label>
+      <label>C/V template<input name="template" value="CVCV"></label>
+      <label>Wordlist path<input name="wordlist"></label>
+      <label>Import file path<input name="file"></label>
+      <label>Min length<input name="min_len" type="number" value="3"></label>
+      <label>Max length<input name="max_len" type="number" value="16"></label>
+      <label>Append digits (0-2)<input name="append_digits" type="number" value="0" min="0" max="2"></label>
+      <label>Delay (s)<input name="delay" type="number" value="1" step="0.1" min="0.2"></label>
+      <label>Concurrency<input name="concurrency" type="number" value="2" min="1" max="10"></label>
+      <label class="check"><input type="checkbox" name="no_underscore">No underscore</label>
+      <label class="check"><input type="checkbox" name="random">Random (length mode)</label>
+      <label class="check"><input type="checkbox" name="underscore_affix">Underscore variants</label>
+      <label class="check"><input type="checkbox" name="leet">Leetspeak</label>
+      <label class="check"><input type="checkbox" name="verify">Verify with token</label>
+      <label class="check"><input type="checkbox" name="ignore_history">Ignore history</label>
+    </form>
+    <div class="actions"><button class="btn" id="start">Start</button><button class="btn alt" id="stop">Stop</button><button class="btn alt" id="preview">Preview</button></div>
+  </section>
+
+  <section id="names" class="card" hidden><h2>Preview (first 60)</h2><ul id="sample"><li>Press Preview on MC Sniper.</li></ul></section>
+  <section id="results" class="card" hidden><h2>Last 200 results</h2><table><thead><tr><th>Name</th><th>Status</th><th>Mode</th><th>Time</th></tr></thead><tbody id="rows"></tbody></table></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const labels={NOT_FOUND:"likely available",VERIFIED_AVAILABLE:"verified",TAKEN:"taken",BLOCKED:"blocked",ERROR:"error"};
+const titles={dash:"Dashboard",sniper:"Sniper",names:"Names",results:"Results"};
+const clock=s=>[s/3600,s/60%60,s%60].map(v=>String(Math.floor(v)).padStart(2,"0")).join(":");
+const node=(tag,...kids)=>{const e=document.createElement(tag);e.append(...kids);return e};
+const say=t=>$("msg").textContent=t;
+async function api(path,body){
+  const r=await fetch(path,body?{method:"POST",headers:{"Content-Type":"application/json","X-AnaStake":"1"},body:JSON.stringify(body)}:undefined);
+  const d=await r.json();if(!r.ok)throw new Error(d.error||r.status);return d;
+}
+function show(page){
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.page===page));
+  Object.keys(titles).forEach(id=>{$(id).hidden=id!==page});
+  $("title").textContent=titles[page];
+  if(page==="results")api("/api/results").then(rows=>$("rows").replaceChildren(...rows.map(r=>
+    node("tr",...[r.name,labels[r.status],r.mode,new Date(r.at*1000).toLocaleString()].map(v=>node("td",v)))))).catch(e=>say(e.message));
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.page));
+const form=()=>{const o={};for(const el of $("form").elements)o[el.name]=el.type==="checkbox"?el.checked:el.value;return o};
+async function preview(){
+  const p=await api("/api/preview",form());
+  $("sample").replaceChildren(...p.sample.map(n=>node("li",n)));
+  say(`${p.total.toLocaleString()} candidates, at least ${clock(p.seconds)}${p.warning?" · "+p.warning:""}`);
+  return p;
+}
+$("preview").onclick=()=>preview().catch(e=>say(e.message));
+$("start").onclick=async()=>{try{
+  const p=await preview();
+  if(!confirm(`${p.confirm?"LARGE RUN. ":""}Check ${p.total.toLocaleString()} names (at least ${clock(p.seconds)})?`))return;
+  await api("/api/start",{...form(),confirmed:true});show("dash");
+}catch(e){say(e.message)}};
+$("stop").onclick=()=>api("/api/stop",{}).catch(e=>say(e.message));
+function paint(s){
+  const c=s.counts,pct=s.total?s.done/s.total*100:0;
+  const values={available:c.NOT_FOUND+c.VERIFIED_AVAILABLE,taken:c.TAKEN,rate:s.rate,limited:s.rate_limited,
+    elapsed:clock(s.elapsed),eta:s.state==="running"?clock(s.eta):"--:--:--",remaining:s.remaining,retries:s.retries,
+    errors:c.ERROR,requests:s.requests,current:s.current||"None",pct:pct.toFixed(1)+"%",frac:`${s.done} / ${s.total}`,
+    extra:`${s.mode} · likely ${c.NOT_FOUND} · verified ${c.VERIFIED_AVAILABLE} · blocked ${c.BLOCKED} · ${s.backoff?"backoff "+s.backoff+"s":"no backoff"}`};
+  for(const [k,v] of Object.entries(values))$(k).textContent=v;
+  $("arc").setAttribute("stroke-dasharray",`${Math.max(.1,pct*3.33)} 333`);
+  $("hits").replaceChildren(...s.hits.map(h=>node("li",node("span",h.name),node("span",labels[h.status]))));
+  $("empty").hidden=s.hits.length>0;
+}
+async function poll(){
+  try{
+    const d=await api("/api/state");
+    if(!$("mode").length)$("mode").append(...d.modes.map(m=>new Option(m)));
+    $("status").textContent=d.busy?"Running":"Stopped";$("status").classList.toggle("live",d.busy);
+    if(d.error)say(d.error);
+    if(d.run)paint(d.run);
+  }catch{$("status").textContent="Disconnected"}
+  setTimeout(poll,700);
+}
+poll();
+</script>
+</body></html>

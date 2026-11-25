@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anastake"
+version = "1.0.0"
+requires-python = ">=3.11"
+dependencies = ["aiohttp>=3.9", "rich>=13"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+anastake = "anastake.cli:main"
+
+[tool.setuptools]
+packages = ["anastake"]
+
+[tool.setuptools.package-data]
+anastake = ["static/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
